@@ -58,8 +58,8 @@ public class IMC
             }
         }
     }
-    public string AlunoId { get; set; }
-    public Aluno Aluno { get; set; }
+    public string? AlunoId { get; set; }
+    public Aluno? Aluno { get; set; }
 
     public IMC() { 
         Id = Guid.NewGuid().ToString();

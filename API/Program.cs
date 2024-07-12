@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,21 +6,29 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDataContext>();
 
-/*builder.Services.AddCors(options =>
+builder.Services.AddCors(options =>
     options.AddPolicy("Acesso Total",
         configs => configs
             .AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod())
-);*/
+);
 
 var app = builder.Build();
 
 app.MapPost("/api/aluno/cadastrar", ([FromBody] Aluno aluno, [FromServices] AppDataContext ctx) =>
 {
+
+    Aluno? alunoBuscado = ctx.Alunos
+        .FirstOrDefault(a => a.Nome == aluno.Nome && a.Sobrenome == aluno.Sobrenome);
+    if (alunoBuscado != null)
+    {
+        return Results.BadRequest("Aluno já cadastrado");
+    }
+
     ctx.Alunos.Add(aluno);
     ctx.SaveChanges();
-    return Results.Created($"/api/aluno/obter/{aluno.Id}", aluno);
+    return Results.Ok("Aluno cadastrado com sucesso");
 });
 
 app.MapPost("/api/imc/cadastrar", ([FromBody] IMC imc, [FromServices] AppDataContext ctx) =>
@@ -36,7 +43,7 @@ app.MapPost("/api/imc/cadastrar", ([FromBody] IMC imc, [FromServices] AppDataCon
 
     ctx.IMCs.Add(imc);
     ctx.SaveChanges();
-    return Results.Created($"/api/imc/obter/{imc.Id}", imc);
+    return Results.Ok("IMC cadastrado com sucesso");
 });
 
 app.MapGet("/api/aluno/listar", ([FromServices] AppDataContext ctx) =>
@@ -75,5 +82,5 @@ app.MapPatch("/api/imc/alterar/{id}", ([FromBody] IMC imc, [FromRoute] string id
     return Results.Ok(imcDB);
 });
 
-//app.UseCors("Acesso Total");
+app.UseCors("Acesso Total");
 app.Run();
